@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from app.database.runner import crear_base_de_datos_si_no_existe
+from app.database.runner import crear_base_de_datos_si_no_existe, ejecutar_migraciones
 
 from app.routers import health, math
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     crear_base_de_datos_si_no_existe()
+    ejecutar_migraciones()
     yield
 
 

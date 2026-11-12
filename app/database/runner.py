@@ -22,3 +22,47 @@ def crear_base_de_datos_si_no_existe():
         print(f"Base de datos '{DB_NAME}' verificada/creada exitosamente.")
     except Exception as e:
         print(f"Error al crear la base de datos: {e}")
+
+def ejecutar_migraciones():
+    # 2. IMPORTANTE: Importamos el engine AQUÍ ADENTRO. 
+    from app.database.config import engine
+
+    with engine.begin() as connection:
+        connection.execute(text("""
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                version VARCHAR(255) PRIMARY KEY,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """))
+
+        result = connection.execute(text("SELECT version FROM schema_migrations"))
+        migraciones_aplicadas = {row[0] for row in result}
+
+        carpeta_migrations = "migrations"
+        if not os.path.exists(carpeta_migrations):
+            os.makedirs(carpeta_migrations)
+            return
+
+        archivos = sorted(os.listdir(carpeta_migrations))
+
+        for archivo in archivos:
+            if archivo.endswith(".sql") and archivo not in migraciones_aplicadas:
+                ruta_archivo = os.path.join(carpeta_migrations, archivo)
+                print(f"Aplicando migración: {archivo}...")
+
+                with open(ruta_archivo, "r", encoding="utf-8") as f:
+                    sql_script = f.read()
+
+                for sentencia in sql_script.split(";"):
+                    if sentencia.strip():
+                        connection.execute(text(sentencia))
+
+                connection.execute(
+                    text("INSERT INTO schema_migrations (version) VALUES (:version)"),
+                    {"version": archivo},
+                )
+                print(f"Migración {archivo} aplicada exitosamente.")
+
+if __name__ == "__main__":
+    crear_base_de_datos_si_no_existe()
+    ejecutar_migraciones()
