@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database.config import get_db
+from app.core.security import verificar_token
 from app.models.persona import PersonaDB  # Asegúrate de tener tu modelo creado
 from app.schemas.persona import (
     PersonaCreate,
@@ -9,7 +10,7 @@ from app.schemas.persona import (
 router = APIRouter(prefix="/process", tags=["Procesos"])
 
 
-@router.post("/", summary="Registrar información de personal")
+@router.post("/", summary="Registrar información de personal", dependencies=[Depends(verificar_token)])
 def procesar_persona(datos: PersonaCreate, db: Session = Depends(get_db)):
     # 1. Verificar si el correo electrónico ya existe en la base de datos
     persona_existente = (
