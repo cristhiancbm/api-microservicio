@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import health
+from app.routers import health, math
 
 # Instancia principal de la aplicación
 app = FastAPI(
@@ -10,6 +10,7 @@ app = FastAPI(
 )
 
 app.include_router(health.router)
+app.include_router(math.router)
 
 # Endpoint GET raíz
 @app.get("/")
