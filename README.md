@@ -2,7 +2,7 @@
 
 Este proyecto es un microservicio desarrollado en **FastAPI**, conectado a una base de datos **MySQL**, asegurado mediante autenticación por **Token Bearer (`APIKeyHeader`)** y expuesto a internet de forma segura mediante **Cloudflare Quick Tunnels**.
 
-## 📋 Requisitos Previos
+## Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalados en tu sistema:
 
@@ -10,7 +10,7 @@ Antes de comenzar, asegúrate de tener instalados en tu sistema:
 - **MySql**
 - **Git**
 
-## 🚀 1. Instalación y Configuración del Entorno
+## 1. Instalación y Configuración del Entorno
 
 1. **Clona el repositorio y entra al directorio del proyecto:**
 
@@ -37,7 +37,7 @@ Antes de comenzar, asegúrate de tener instalados en tu sistema:
    ```
    _(Asegúrate de incluir paquetes como `fastapi`, `uvicorn`, `sqlalchemy`, `pymysql`, `pydantic`)._
 
-## ▶️ 2. Ejecutar el Backend (FastAPI)
+## 2. Ejecutar el Backend (FastAPI)
 
 Con el entorno virtual activado y la base de datos en marcha, levanta el servidor de desarrollo con Uvicorn:
 
@@ -48,7 +48,7 @@ uvicorn main:app --reload
 - El servidor estará disponible localmente en: `http://localhost:8000`
 - Documentación interactiva (Swagger UI): `http://localhost:8000/docs`
 
-### 🔐 Autenticación Bearer
+### Autenticación Bearer
 
 Los endpoints protegidos requieren el envío de un token estático utilizando el esquema **Bearer** en el encabezado HTTP `Authorization`:
 
@@ -57,7 +57,7 @@ Los endpoints protegidos requieren el envío de un token estático utilizando el
 
 _(En Swagger UI, haz clic en el botón **Authorize**, e introduce el token con el prefijo o formato configurado, por ejemplo, `123456` o `Bearer 123456` según tu esquema actual de validación)._
 
-## 🌐 3. Exponer el Servicio con Cloudflare Tunnel (`cloudflared`)
+## 3. Exponer el Servicio con Cloudflare Tunnel (`cloudflared`)
 
 Para hacer accesible la API desde internet mediante HTTPS sin abrir puertos en el router ni requerir un dominio propio, utilizamos un **Quick Tunnel** (Tunel temporal) de Cloudflare.
 
@@ -104,7 +104,7 @@ https://<nombre-aleatorio>.trycloudflare.com
    ```
 2. Haz clic en **Authorize**, introduce el token Bearer correspondiente y prueba tus endpoints desde cualquier red o dispositivo.
 
-## 📝 Notas Adicionales
+## Notas Adicionales
 
 - **Túneles Temporales:** El comando `--url` genera un subdominio aleatorio cada vez que se reinicia el proceso. No requiere iniciar sesión ni poseer un dominio registrado en Cloudflare.
 - **Terminales Simultáneas:** Recuerda mantener tanto `uvicorn` como `cloudflared` ejecutándose en paralelo mientras utilices el servicio de forma remota.
