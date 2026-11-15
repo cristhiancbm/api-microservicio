@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from app.schemas.persona import PersonaCreate, PersonaResponse
 from app.database.config import get_db
 from app.core.security import verificar_token
 from app.models.persona import PersonaDB  # Asegúrate de tener tu modelo creado
 from app.schemas.persona import (
     PersonaCreate,
+    PersonaResponse,
 )
 
 router = APIRouter(prefix="/process", tags=["Procesos"])
@@ -49,3 +52,23 @@ def procesar_persona(datos: PersonaCreate, db: Session = Depends(get_db)):
         "id": nueva_persona.id,
         "datos": datos,
     }
+@router.get(
+    "/",
+    response_model=List[PersonaResponse],
+    summary="Listar todas las personas registradas",
+    dependencies=[Depends(verificar_token)],
+)
+def listar_personas(db: Session = Depends(get_db)):
+    """
+    Obtiene una lista con todos los registros de personas almacenados en la base de datos.
+    Requiere autenticación Bearer Token.
+    """
+    try:
+        # Consulta todos los registros de la tabla PersonaDB
+        personas = db.query(PersonaDB).all()
+        return personas
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener los registros: {str(e)}",
+        )
