@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from groq import Groq
+from typing import List
 
 from app.database.config import get_db
 from app.core.security import verificar_token
@@ -75,3 +76,21 @@ def procesar_enlace(datos: EnlaceCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+@router.get(
+    "/enlaces",
+    response_model=List[EnlaceResponse],
+    summary="Listar todos los enlaces y markdowns registrados",
+    dependencies=[Depends(verificar_token)],
+)
+def listar_enlaces(db: Session = Depends(get_db)):
+    """
+    Retorna una lista con todas las URLs procesadas y sus respectivos markdowns almacenados en la base de datos.
+    """
+    try:
+        enlaces = db.query(Enlace).all()
+        return enlaces
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener los enlaces: {str(e)}",
+        )
