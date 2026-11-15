@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class PersonaCreate(BaseModel):
@@ -10,7 +10,7 @@ class PersonaCreate(BaseModel):
     celular: str = Field(
         ..., description="Número de celular obligatorio", example="76543210"
     )
-    email: str = Field(
+    email: EmailStr = Field(
         ..., description="Correo electrónico único", example="ana@gmail.com"
     )
     genero: Optional[str] = Field(None, description="Género", example="Femenino")
