@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-
 from app.database.runner import crear_base_de_datos_si_no_existe, ejecutar_migraciones
-
-from app.routers import health, math, process
+from app.routers import health, math, process, validator
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,6 +21,7 @@ app = FastAPI(
 app.include_router(health.router)
 app.include_router(math.router)
 app.include_router(process.router)
+app.include_router(validator.router)
 
 # Endpoint GET raíz
 @app.get("/")
