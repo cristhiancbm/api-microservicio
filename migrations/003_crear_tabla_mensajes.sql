@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS mensajes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    remitente VARCHAR(100) NOT NULL,
+    destinatario VARCHAR(100) NOT NULL,
+    contenido TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
