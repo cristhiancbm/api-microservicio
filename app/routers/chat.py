@@ -1,17 +1,17 @@
 from typing import Dict, List
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, status
 from sqlalchemy.orm import Session
 import json
 
 from app.database.config import get_db
 from app.models.mensaje import MensajeDB
+from app.core.security import verificar_token_ws
 
 router = APIRouter(tags=["Chat WebSocket"])
 
 
 class ConnectionManager:
     def __init__(self):
-        # Mapea client_id -> WebSocket activo
         self.active_connections: Dict[str, WebSocket] = {}
 
     async def connect(self, client_id: str, websocket: WebSocket):
@@ -39,27 +39,35 @@ manager = ConnectionManager()
 
 @router.websocket("/ws/{client_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, client_id: str, db: Session = Depends(get_db)
+    websocket: WebSocket,
+    client_id: str,
+    token: str = None,
+    db: Session = Depends(get_db),
 ):
+    # Validación estricta del Token Bearer usando la lógica modularizada en security.py
+    if not verificar_token_ws(token):
+        await websocket.accept()
+        await websocket.send_text(
+            json.dumps({"tipo": "error", "mensaje": "Autenticación fallida: Token inválido o ausente"})
+        )
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
     await manager.connect(client_id, websocket)
-    # Notificar presencia: usuario conectado
     await manager.broadcast({"tipo": "sistema", "mensaje": f"El usuario '{client_id}' se ha conectado."})
 
     try:
         while True:
             data = await websocket.receive_text()
-            # Esperamos un JSON con formato: {"destinatario": "bob", "contenido": "Hola Bob!"} 
-            # o destinatario = "todos" para broadcast
             try:
                 payload = json.loads(data)
                 destinatario = payload.get("destinatario", "todos")
                 contenido = payload.get("contenido", "")
 
-                # Guardar mensaje en MySQL (Almacén de mensajes)
                 nuevo_mensaje = MensajeDB(
                     remitente=client_id,
                     destinatario=destinatario,
-                    contenido=contenido
+                    contenido=contenido,
                 )
                 db.add(nuevo_mensaje)
                 db.commit()
@@ -73,7 +81,6 @@ async def websocket_endpoint(
                 if destinatario == "todos":
                     await manager.broadcast(mensaje_salida)
                 else:
-                    # Enviar al destinatario y también reflejarlo al remitente
                     await manager.send_to_user(destinatario, mensaje_salida)
                     await manager.send_to_user(client_id, mensaje_salida)
 
