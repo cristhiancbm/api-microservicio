@@ -2,6 +2,28 @@
 
 Este proyecto es un microservicio desarrollado en **FastAPI**, conectado a una base de datos **MySQL**, asegurado mediante autenticación por **Token Bearer (`APIKeyHeader`)** y expuesto a internet de forma segura mediante **Cloudflare Quick Tunnels**.
 
+## Flujo de la API
+
+![Flujo de la API](docs/diagramas/flujo-api.svg)
+
+[Abrir diagrama interactivo](docs/diagramas/flujo-api.html)
+
+## Rutas de la API
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/` | No | Comprobación simple: devuelve `estado: exitoso` y un mensaje de servidor activo. |
+| `GET` | `/scalar` | No | Documentación alternativa con Scalar (`include_in_schema=False`). |
+| `GET` | `/health` | Bearer | Health protegido; responde `{"status": "ok"}`. |
+| `POST` | `/sum` | Bearer | Suma `num1` y `num2`, redondea a 4 decimales y devuelve `resultado`. |
+| `POST` | `/process/` | Bearer | Registra una persona: valida email duplicado (400), guarda en MySQL y devuelve `id` y datos. |
+| `GET` | `/process/` | Bearer | Lista todas las personas registradas. |
+| `POST` | `/procesar-enlace` | Bearer | Descarga el HTML de una URL, lo convierte a Markdown con Groq, guarda en `enlaces` y responde 201; reutiliza la caché si ya existe. |
+| `GET` | `/enlaces` | Bearer | Lista todos los enlaces y sus Markdown almacenados. |
+| `WS` | `/ws/{client_id}` | Token en query (`token`) | Chat en tiempo real: guarda mensajes en `mensajes` y los envía al destinatario o a todos. |
+
+> FastAPI también expone automáticamente `/docs`, `/redoc` y `/openapi.json`. Las rutas protegidas requieren el header `Authorization: Bearer <token>`.
+
 ## Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalados en tu sistema:
